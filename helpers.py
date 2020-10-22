@@ -1,4 +1,5 @@
 import pathlib
+import os
 import re
 
 from pyrevit.framework import clr
@@ -17,7 +18,7 @@ class FamilyLoader:
         family.load_selective() # OR family.load_all()
     """
     def __init__(self, path):
-        self.path = path
+        self.path = os.fsdecode(path)
         self.name = pathlib.PurePath(path).name.replace(".rfa", "")
 
     @property

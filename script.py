@@ -1,3 +1,11 @@
+"""
+TODO:
+    - ENCODING !!!
+        -> PurePath(some_utf8_str)
+        -> should accept/process danish/german/.. chars
+    - see if pathlib.Path() classes can be leveraged, instea
+      of just pulling the str(pathlib.Path())
+"""
 import re
 import os
 import pathlib
@@ -16,7 +24,7 @@ if directory is None:
 
 # Find .rfa files in directory
 # Excluding backups
-with_backups = [str(path) for path in pathlib.Path(directory).rglob('*.rfa')]
+with_backups = [str(path) for path in pathlib.Path(os.fsdecode(directory)).rglob('*.rfa')]
 backup_pattern = re.compile('^.*\.\d{4}\.rfa$')
 abs_paths = [i for i in with_backups if not backup_pattern.match(i)]
 
