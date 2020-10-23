@@ -1,4 +1,3 @@
-import pathlib
 import os
 import re
 
@@ -12,18 +11,48 @@ class FamilyLoader:
     """
     Enables loading a family from an absolute path.
 
-    Example:
-    family = FamilyLoader("absolute/path/to/my/family")
-    if not family.is_loaded:
-        family.load_selective() # OR family.load_all()
+    Attributes
+    ----------
+    path : str
+        absolute path to family .rfa file
+    name : str
+        file name
+    is_loaded : bool
+        checks if family name already exists in project
+
+    Methods
+    -------
+    get_symbols()
+        loads family in a fake transaction to return all symbols
+    load_selective()
+        loads the family and selected symbols
+    load_all()
+        loads family and all its symbols
+
+    Credit
+    ------
+    Based on Ehsan Iran-Nejads 'Load More Types'
     """
     def __init__(self, path):
-        self.path = os.fsdecode(path)
-        self.name = pathlib.PurePath(path).name.replace(".rfa", "")
+        """
+        Parameters
+        ----------
+        path : str
+            absolute path to family .rfa file
+        """
+        self.path = path
+        self.name = os.path.basename(path).replace(".rfa", "")
 
     @property
     def is_loaded(self):
-        """ Checks if family name already exists in project """
+        """
+        Checks if family name already exists in project
+
+        Returns
+        -------
+        bool
+            a flag indicating if family is already loaded
+        """
         collector = DB.FilteredElementCollector(revit.doc).OfClass(DB.Family)
         condition = (x for x in collector if x.Name == self.name)
         return next(condition, None) is not None
@@ -32,7 +61,8 @@ class FamilyLoader:
         """
         Loads family in a fake transaction to return all symbols.
 
-        Remark:
+        Remark
+        ------
         Uses SmartSortableFamilySymbol for effective sorting
         """
         logger.debug('Fake loading family: {}'.format(self.name))
@@ -53,11 +83,7 @@ class FamilyLoader:
         return sorted(symbol_set)
 
     def load_selective(self):
-        """
-        Loads the family and only selected symbols.
-
-        Based on Ehsan Iran-Nejads 'Load More Types'
-        """
+        """ Loads the family and selected symbols. """
         # User input -> Select family symbols
         options = self.get_symbols()  # Get a set with the symbols
         selected_symbols = forms.SelectFromList.show(
@@ -101,7 +127,13 @@ class SmartSortableFamilySymbol:
     """
     Enables smart sorting of family symbols.
 
-    Example:
+    Attributes
+    ----------
+    symbol_name : str
+        name of the family symbol
+
+    Example
+    -------
     symbol_set = set()
     for family_symbol in familiy_symbols:
         family_symbol_name = revit.query.get_name(family_symbol)
@@ -109,8 +141,10 @@ class SmartSortableFamilySymbol:
         symbol_set.add(sortable_sym)
     sorted_symbols = sorted(symbol_set)
 
+    Credit
+    ------
     Copied from Ehsan Iran-Nejads SmartSortableFamilyType
-    in 'Load More Types'
+    in 'Load More Types'.
     """
     def __init__(self, symbol_name):
         self.symbol_name = symbol_name
