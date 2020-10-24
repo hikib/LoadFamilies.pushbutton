@@ -82,12 +82,18 @@ class FamilyLoader:
                     symbol_set.add(sortable_sym)
         return sorted(symbol_set)
 
-    def load_selective(self):
-        """ Loads the family and selected symbols. """
+    def load_selective(self, symbols):
+        """
+        Loads the family and selected symbols.
+
+        Parameters
+        ----------
+        symbols: set
+            names of family symbols. see self.get_symbols().
+        """
         # User input -> Select family symbols
-        options = self.get_symbols()  # Get a set with the symbols
         selected_symbols = forms.SelectFromList.show(
-            options,
+            symbols,
             title=self.name,
             button_name="Load type(s)",
             multiselect=True)

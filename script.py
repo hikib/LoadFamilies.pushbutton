@@ -55,6 +55,7 @@ if selected_loading_option is None:
     logger.debug('No loading option selected. Calling script.exit()')
     script.exit()
 logger.debug('Selected loading option: {}'.format(selected_loading_option))
+laoding_option = family_loading_options[selected_loading_option]
 
 # Loading selected families
 for family_path in selected_families:
@@ -63,5 +64,13 @@ for family_path in selected_families:
     loaded = family.is_loaded
     logger.debug('Family is already loaded: {}'.format(loaded))
     if not loaded:
-        # Method of FamilyLoad class by selected loading option
-        getattr(family, family_loading_options[selected_loading_option])()
+        if laoding_option == "load_selective":
+            symbols = family.get_symbols()
+            # Dont select symbols if there is only 1
+            if len(symbols) == 1:
+                family.load_all()
+            else:
+                family.load_selective(symbols)
+        else:
+            # Method of FamilyLoad class by selected loading option
+            family.load_all()
