@@ -85,8 +85,8 @@ with forms.ProgressBar(title='Loading Family {value} of {max_value}',
         if loaded:
             logger.debug('Family is already loaded: {}'.format(family.path))
             already_loaded.add(family)
-        else:
-            getattr(family, laoding_option)()
+            continue
+        getattr(family, laoding_option)()
 
 # Feedback on already loaded families
 if len(already_loaded) != 0:

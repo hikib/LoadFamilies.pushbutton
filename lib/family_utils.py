@@ -14,20 +14,20 @@ class FamilyLoader:
     Attributes
     ----------
     path : str
-        absolute path to family .rfa file
+        Absolute path to family .rfa file
     name : str
-        file name
+        File name
     is_loaded : bool
-        checks if family name already exists in project
+        Checks if family name already exists in project
 
     Methods
     -------
     get_symbols()
-        loads family in a fake transaction to return all symbols
+        Loads family in a fake transaction to return all symbols
     load_selective()
-        loads the family and selected symbols
+        Loads the family and selected symbols
     load_all()
-        loads family and all its symbols
+        Loads family and all its symbols
 
     Credit
     ------
@@ -38,7 +38,7 @@ class FamilyLoader:
         Parameters
         ----------
         path : str
-            absolute path to family .rfa file
+            Absolute path to family .rfa file
         """
         self.path = path
         self.name = os.path.basename(path).replace(".rfa", "")
@@ -51,7 +51,7 @@ class FamilyLoader:
         Returns
         -------
         bool
-            a flag indicating if family is already loaded
+            Flag indicating if family is already loaded
         """
         collector = DB.FilteredElementCollector(revit.doc).OfClass(DB.Family)
         condition = (x for x in collector if x.Name == self.name)
@@ -60,6 +60,11 @@ class FamilyLoader:
     def get_symbols(self):
         """
         Loads family in a fake transaction to return all symbols.
+
+        Returns
+        -------
+        set()
+            Set of family symbols
 
         Remark
         ------
