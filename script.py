@@ -1,11 +1,24 @@
-import re
 import os
-import pathlib
 from pyrevit import forms, script
-from helpers import FamilyLoader
+
+# Custom modules in lib/
+from file_utils import FileFinder
+from family_utils import FamilyLoader
 
 logger = script.get_logger()
-# logger.set_debug_mode()
+output = script.get_output()
+
+"""
+TODO:
+    - Add docstrings
+    - Add progress bar with CANCEL
+      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.ProgressBar
+    - Add alerts instead of writing into output
+      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
+    - Maybe document check
+      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
+
+"""
 
 # Get directory with families
 directory = forms.pick_folder("Select parent folder of families")
@@ -14,22 +27,25 @@ if directory is None:
     logger.debug('No directory selected. Calling script.exit')
     script.exit()
 
-# Find .rfa files in directory
+# Find family files in directory
+finder = FileFinder(directory)
+logger.debug("Parent directory: {}".format(finder.directory))
+finder.search('*.rfa')
+
 # Excluding backup files
-with_backups = [str(path) for path in pathlib.Path(directory).rglob('*.rfa')]
-backup_pattern = re.compile('^.*\.\d{4}\.rfa$')
-abs_paths = [i for i in with_backups if not backup_pattern.match(i)]
-logger.debug('Search result for {} files: {}'.format('*.rfa', abs_paths))
+backup_pattern = r'^.*\.\d{4}\.rfa$'
+finder.exclude_by_pattern(backup_pattern)
+paths = finder.paths
 
 # Dictionary to look up absolute paths by relative paths
-rel_paths = [path.replace(directory, "..") for path in abs_paths]
-logger.debug('Relative paths of files: {}'.format(rel_paths))
-path_dict = dict(zip(rel_paths, abs_paths))
+path_dict = dict()
+for path in paths:
+    path_dict.update({os.path.relpath(path, directory): path})
 
 # User input -> Select families from directory
 family_select_options = sorted(
     path_dict.keys(),
-    key=lambda x: (x.count(os.sep), x))
+    key=lambda x: (x.count(os.sep), x))  # Sort by nesting
 selected_families = forms.SelectFromList.show(
     family_select_options,
     title="Select Families",
@@ -47,30 +63,29 @@ family_loading_options = {
     "Load types by selecting individually": "load_selective"}
 selected_loading_option = forms.CommandSwitchWindow.show(
     family_loading_options.keys(),
-    message='Select Option:',
-)
-
-# User input -> Select loading option (load all, load certain symbols)
+    message='Select loading option:',)
 if selected_loading_option is None:
     logger.debug('No loading option selected. Calling script.exit()')
     script.exit()
+
+# User input -> Select loading option (load all, load certain symbols)
 logger.debug('Selected loading option: {}'.format(selected_loading_option))
 laoding_option = family_loading_options[selected_loading_option]
 
 # Loading selected families
+already_loaded = set()
 for family_path in selected_families:
     family = FamilyLoader(path_dict[family_path])
     logger.debug('Loading family: {}'.format(family.name))
     loaded = family.is_loaded
-    logger.debug('Family is already loaded: {}'.format(loaded))
-    if not loaded:
-        if laoding_option == "load_selective":
-            symbols = family.get_symbols()
-            # Dont select symbols if there is only 1
-            if len(symbols) == 1:
-                family.load_all()
-            else:
-                family.load_selective(symbols)
-        else:
-            # Method of FamilyLoad class by selected loading option
-            family.load_all()
+    if loaded:
+        logger.debug('Family is already loaded: {}'.format(family.path))
+        already_loaded.add(family)
+    else:
+        getattr(family, laoding_option)()
+
+# Feedback on already loaded families
+if len(already_loaded) != 0:
+    output.print_md('### Families that were already loaded:')
+    for family in sorted(already_loaded):
+        print(family.path)

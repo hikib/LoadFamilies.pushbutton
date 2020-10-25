@@ -5,6 +5,7 @@ from pyrevit.framework import clr
 from pyrevit import forms, revit, DB, script
 
 logger = script.get_logger()
+output = script.get_output()
 
 
 class FamilyLoader:
@@ -82,7 +83,7 @@ class FamilyLoader:
                     symbol_set.add(sortable_sym)
         return sorted(symbol_set)
 
-    def load_selective(self, symbols):
+    def load_selective(self):
         """
         Loads the family and selected symbols.
 
@@ -91,6 +92,13 @@ class FamilyLoader:
         symbols: set
             names of family symbols. see self.get_symbols().
         """
+        symbols = self.get_symbols()
+
+        # Dont prompt if only 1 symbol available
+        if len(symbols) == 1:
+            self.load_all()
+            return
+
         # User input -> Select family symbols
         selected_symbols = forms.SelectFromList.show(
             symbols,
