@@ -11,14 +11,8 @@ output = script.get_output()
 """
 TODO:
     - Add docstrings
-    - Add progress bar with CANCEL
-      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.ProgressBar
-    - Add alerts instead of writing into output
-      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
     - Maybe document check
       https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
-    - Change 'directory' to 'folder' in bundle description
-
 """
 
 # Get directory with families

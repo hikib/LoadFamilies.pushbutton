@@ -5,7 +5,6 @@ from pyrevit.framework import clr
 from pyrevit import forms, revit, DB, script
 
 logger = script.get_logger()
-output = script.get_output()
 
 
 class FamilyLoader:

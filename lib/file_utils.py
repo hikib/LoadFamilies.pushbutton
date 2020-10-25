@@ -2,10 +2,9 @@ import re
 import pathlib
 import itertools
 
-from pyrevit import script
+from pyrevit import script, forms
 
 logger = script.get_logger()
-output = script.get_output()
 
 
 class FileFinder:
@@ -22,15 +21,15 @@ class FileFinder:
 
     def search(self, pattern):
         result = pathlib.Path(self.directory).rglob(pattern)
-        if result is None:
-            logger.debug(
-                'No {} files in "{}" .'.format(pattern, self.directory))
-            output.print_md(
-                '### No {} files in "{}" .'.format(pattern, self.directory))
-            script.exit()
         for path in result:
             logger.debug('Found file: {}'.format(path))
             self.paths.add(str(path))
+        if len(self.paths) == 0:
+            logger.debug(
+                'No {} files in "{}" found.'.format(pattern, self.directory))
+            forms.alert(
+                'No {} files in "{}" found.'.format(pattern, self.directory))
+            script.exit()
 
     def exclude_by_pattern(self, pattern):
         self.paths = itertools.ifilterfalse(
