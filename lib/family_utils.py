@@ -84,14 +84,7 @@ class FamilyLoader:
         return sorted(symbol_set)
 
     def load_selective(self):
-        """
-        Loads the family and selected symbols.
-
-        Parameters
-        ----------
-        symbols: set
-            names of family symbols. see self.get_symbols().
-        """
+        """ Loads the family and selected symbols. """
         symbols = self.get_symbols()
 
         # Dont prompt if only 1 symbol available

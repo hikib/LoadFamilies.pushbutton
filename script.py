@@ -17,6 +17,7 @@ TODO:
       https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
     - Maybe document check
       https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
+    - Change 'directory' to 'folder' in bundle description
 
 """
 
@@ -29,7 +30,6 @@ if directory is None:
 
 # Find family files in directory
 finder = FileFinder(directory)
-logger.debug("Parent directory: {}".format(finder.directory))
 finder.search('*.rfa')
 
 # Excluding backup files
@@ -45,7 +45,7 @@ for path in paths:
 # User input -> Select families from directory
 family_select_options = sorted(
     path_dict.keys(),
-    key=lambda x: (x.count(os.sep), x))  # Sort by nesting
+    key=lambda x: (x.count(os.sep), x))  # Sort by nesting level
 selected_families = forms.SelectFromList.show(
     family_select_options,
     title="Select Families",
@@ -72,17 +72,27 @@ if selected_loading_option is None:
 logger.debug('Selected loading option: {}'.format(selected_loading_option))
 laoding_option = family_loading_options[selected_loading_option]
 
-# Loading selected families
+
+# Feedback on already loaded families
 already_loaded = set()
-for family_path in selected_families:
-    family = FamilyLoader(path_dict[family_path])
-    logger.debug('Loading family: {}'.format(family.name))
-    loaded = family.is_loaded
-    if loaded:
-        logger.debug('Family is already loaded: {}'.format(family.path))
-        already_loaded.add(family)
-    else:
-        getattr(family, laoding_option)()
+
+# Loading selected families
+max_value = len(selected_families)
+with forms.ProgressBar(title='Loading Family {value} of {max_value}',
+                       cancellable=True) as pb:
+    for count, family_path in enumerate(selected_families, 1):
+        if pb.cancelled:
+            break
+        pb.update_progress(count, max_value)
+
+        family = FamilyLoader(path_dict[family_path])
+        logger.debug('Loading family: {}'.format(family.name))
+        loaded = family.is_loaded
+        if loaded:
+            logger.debug('Family is already loaded: {}'.format(family.path))
+            already_loaded.add(family)
+        else:
+            getattr(family, laoding_option)()
 
 # Feedback on already loaded families
 if len(already_loaded) != 0:

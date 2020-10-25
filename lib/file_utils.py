@@ -22,16 +22,16 @@ class FileFinder:
 
     def search(self, pattern):
         result = pathlib.Path(self.directory).rglob(pattern)
-        if len(list(result)) == 0:
+        if result is None:
             logger.debug(
                 'No {} files in "{}" .'.format(pattern, self.directory))
             output.print_md(
                 '### No {} files in "{}" .'.format(pattern, self.directory))
             script.exit()
-        self.paths.update({str(path) for path in result})
-        logger.debug('Found files: {}'.format(self.paths))
+        for path in result:
+            logger.debug('Found file: {}'.format(path))
+            self.paths.add(str(path))
 
     def exclude_by_pattern(self, pattern):
         self.paths = itertools.ifilterfalse(
             re.compile(pattern).match, self.paths)
-        logger.debug('Files passing {} filter:{}'.format(pattern, self.paths))
