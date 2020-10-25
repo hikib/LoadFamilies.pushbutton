@@ -8,12 +8,6 @@ from family_utils import FamilyLoader
 logger = script.get_logger()
 output = script.get_output()
 
-"""
-TODO:
-    - Add docstrings
-    - Maybe document check
-      https://pyrevit.readthedocs.io/en/latest/pyrevit/forms.html#pyrevit.forms.alert
-"""
 
 # Get directory with families
 directory = forms.pick_folder("Select parent folder of families")
